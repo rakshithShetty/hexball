@@ -1,60 +1,53 @@
 ---
 layout: post
-title: "Why I'm building a hex-grid football game"
+title: "The hardest design decision: how random should random be?"
 date: 2026-06-29
 categories: devlog
+permalink: /dice-design/
 ---
 
-Football is the sport I grew up watching. Chess is the game I kept coming back to in my head — the idea that a sport could work like a puzzle, where every position matters and every resource decision has a cost.
+Every football game has to answer one question early: how much should skill matter vs luck?
 
-I wanted to see what a football game would look like if you stripped away the reflexes and real-time chaos, and replaced them with the slow, deliberate tension of a turn-based strategy game. Not a football *simulator* — a football *game*, where positioning and reading the opponent are the skills that win.
+Get it wrong one way and you've built a spreadsheet — the better team always wins, nothing interesting ever happens, and there's no point playing out the match. Get it wrong the other way and you've built a slot machine — results are chaos, player quality is meaningless, and tactics don't actually matter.
 
-That idea became HexBall.
-
----
-
-## Why hex?
-
-The first version used a square grid. It felt wrong immediately. Diagonal movement had this awkward quality — you could skirt around defenders at a weird angle that didn't match how football actually works. Players spread across a pitch in 6 directions, not 4 or 8.
-
-Hexagonal grids give 6 equidistant neighbours. That maps naturally to how a footballer sees space: wide left, wide right, central, forward, back, and the diagonals between. Pass geometry and line-of-sight checks also become much cleaner — there's no "does the diagonal count?" ambiguity.
-
-The moment I switched to hex, the game started feeling like football.
+HexBall uses dice to resolve contested actions — tackles, shots, passes under pressure. So I had to get this right before anything else.
 
 ---
 
-## The dice question
+## Why dice at all?
 
-The trickiest early design problem was the dice model. Too random and skill doesn't matter; too deterministic and the game becomes solved chess — the better team always wins, nothing interesting happens.
+I wanted every action to have a *known risk* before you commit. You can see the numbers. You know your striker has a 70 shooting stat and the keeper is a 55. Before you pull the trigger you can work out roughly what you're getting into. That transparency felt important — it's a tactics game, not a mystery box.
 
-I ran Monte Carlo simulations to find the sweet spot. The target:
-
-- Equal teams → ~50% win rate each
-- Elite striker vs average GK → ~30% goal rate (hard to score, but possible)
-- Upsets → 5–15% (better team usually wins, but not always)
-
-After comparing 2d6, 3d6, and flat d20 models, **3d6** hit the target distribution best. The bell curve means elite players consistently outperform average ones, but the tails are fat enough that anything can happen on a given day.
+The question was just: which dice?
 
 ---
 
-## Where it is now
+## The simulation
 
-I'm calling the current build Sprint 5.7. The core is solid:
+I ran Monte Carlo simulations across three models — d20 (flat distribution), 2d6, and 3d6 — and tuned until the outcomes felt right. The targets I was aiming for:
 
-- Full 11v11 match engine, config-driven
-- All base actions: move, pass, long pass, shoot, tackle
-- 5 special abilities (through ball, power shot, slide tackle, sweeper punch, press trigger)
-- A reaction system where defenders pre-declare responses before the attacking turn resolves
-- Heuristic AI with influence maps and multi-step planning
-- Headless batch simulation for balance testing
-- 244 passing tests
+- **Equal teams** → roughly 50/50 win rate
+- **Elite striker (stat 85+) vs average keeper (stat 55)** → scoring maybe 50–60% of close shots, dropping off sharply with distance
+- **Upsets** → the weaker team should win 5–15% of the time. Enough to matter. Not enough to feel broken.
 
-The renderer runs in pygame — you can watch two AI teams play, or take control of one side yourself.
+Here's what came out:
+
+![Dice simulation results](../assets/images/dice_sim_results.png)
 
 ---
 
-## What's next
+## What the charts show
 
-The current focus is polishing the AI and expanding the ability system. Longer term I want to explore a proper MCTS planner and eventually see if a trained model can discover non-obvious tactics.
+A few things jumped out once I had the data.
 
-I'll keep posting here as things develop. Next up: a proper look at the reaction system and why it changes the tactical feel of the game entirely.
+**Distance kills your shot.** Even an elite striker (stat 95) against a weak keeper (stat 40) goes from ~85% at point-blank to basically nothing by hex distance 10. That's intentional — it forces you to actually build attacks and work the ball into dangerous positions rather than just launching shots from anywhere.
+
+**Skill gaps are real but not cruel.** A 90-stat attacker vs a 30-stat defender wins 96% of duels. Sounds dominant — but a 70 vs 70 matchup lands at about 45% for the attacker (slight defender advantage built in). And even the 30-stat player beats the 90-stat one 1.9% of the time. That 1.9% is the magic — it means every duel matters, and sometimes your tidy centre-back gets nutmegged by a League One reject.
+
+**3d6 won.** The bell curve is the reason. Flat d20 swings too wildly — upsets were too common and skill felt irrelevant. 2d6 was better but the distribution peaked too sharply. 3d6 gives you that satisfying middle ground: most of the time the better player wins, but the tails are fat enough that football happens.
+
+---
+
+The dice model hasn't changed since I locked it. Everything else in the engine has been built on top of it.
+
+Next post: the reaction system — where the game stops being dice-rolling and starts feeling like actual football tactics.
