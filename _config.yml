@@ -1,0 +1,18 @@
+title: HexBall
+description: Turn-based tactical football on a hexagonal grid
+theme: minima
+url: "https://rakshithshetty.github.io"
+baseurl: "/hexball"
+author: Rakshith Shetty
+show_excerpts: true
+
+minima:
+  skin: dark
+
+header_pages:
+  - about.md
+  - blog.md
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
