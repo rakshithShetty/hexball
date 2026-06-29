@@ -1,34 +1,23 @@
 ---
 layout: post
-title: "The hardest design decision: how random should random be?"
+title: "How random should random be?"
 date: 2026-06-29
 categories: devlog
 permalink: /dice-design/
 ---
 
-Every football game has to answer one question early: how much should skill matter vs luck?
+I made an early decision to have randomness and risk-taking core part of the gameplay. Ofcourse this is nothing new to DnD players, but my direct was Baldur's Gate 3, I love how every action in the game goes through a dice check, which is fully transparent to the player. You can see the odds, you can add boosts to try to swing it your way. 
 
-Get it wrong one way and you've built a spreadsheet — the better team always wins, nothing interesting ever happens, and there's no point playing out the match. Get it wrong the other way and you've built a slot machine — results are chaos, player quality is meaningless, and tactics don't actually matter.
+HexBall uses dice to resolve contested actions — tackles, shots, passes under pressure. However a football game is not just one action in isolation, it is a series of actions (pass-pass-pass-x10-goal). The tuning of the dice, success thresholds for different actions is critical to make it work. Get it wrong one way and you've built a spreadsheet — the better team always wins, nothing interesting ever happens, and there's no point playing out the match. Get it wrong the other way and you've built a slot machine — results are chaos, player quality is meaningless, and tactics don't actually matter.
 
-HexBall uses dice to resolve contested actions — tackles, shots, passes under pressure. So I had to get this right before anything else.
-
----
-
-## Why dice at all?
-
-I wanted every action to have a *known risk* before you commit. You can see the numbers. You know your striker has a 70 shooting stat and the keeper is a 55. Before you pull the trigger you can work out roughly what you're getting into. That transparency felt important — it's a tactics game, not a mystery box.
-
-The question was just: which dice?
-
----
 
 ## The simulation
 
 I ran Monte Carlo simulations across three models — d20 (flat distribution), 2d6, and 3d6 — and tuned until the outcomes felt right. The targets I was aiming for:
 
-- **Equal teams** → roughly 50/50 win rate
+- **Reasonable win-rates** → Passes should be easier, shots harder.
 - **Elite striker (stat 85+) vs average keeper (stat 55)** → scoring maybe 50–60% of close shots, dropping off sharply with distance
-- **Upsets** → the weaker team should win 5–15% of the time. Enough to matter. Not enough to feel broken.
+- **Upsets** → the weaker player should win 5–15% of the time. Enough to matter. Not enough to feel broken.
 
 Here's what came out:
 
@@ -48,6 +37,6 @@ A few things jumped out once I had the data.
 
 ---
 
-The dice model hasn't changed since I locked it. Everything else in the engine has been built on top of it.
+Building with this dice model for now. Everything else in the engine has been built on top of it, but software is modular enought to retune this once the full game is functional.
 
 Next post: the reaction system — where the game stops being dice-rolling and starts feeling like actual football tactics.
